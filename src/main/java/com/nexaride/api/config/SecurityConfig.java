@@ -34,9 +34,15 @@ public class SecurityConfig {
             )
 
             .authorizeHttpRequests(auth -> auth
+                // ✅ PUBLIC ENDPOINTS (IMPORTANT FOR RENDER)
+                .requestMatchers("/", "/health", "/error").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
+
+                // 🔒 PROTECTED ENDPOINTS
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/bookings/**").hasAnyRole("USER", "ADMIN")
+
+                // ❗ everything else requires auth
                 .anyRequest().authenticated()
             )
 
