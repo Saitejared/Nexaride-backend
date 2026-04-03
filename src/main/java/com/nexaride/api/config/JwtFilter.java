@@ -31,15 +31,15 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // ✅ Skip ALL auth endpoints safely
-        if (path.startsWith("/api/auth")) {
+        // ✅ FIX: skip public endpoints
+        if (path.equals("/") || path.startsWith("/api/auth") || path.startsWith("/error")) {
             chain.doFilter(request, response);
             return;
         }
 
         String header = request.getHeader("Authorization");
 
-        // ✅ No token → continue (Spring will block if needed)
+        // ✅ No token → just continue
         if (header == null || !header.startsWith("Bearer ")) {
             chain.doFilter(request, response);
             return;
@@ -61,10 +61,8 @@ public class JwtFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(auth);
 
         } catch (Exception e) {
-            // ✅ DO NOT break flow — let Spring decide
+            // ✅ Never crash request
             SecurityContextHolder.clearContext();
-            chain.doFilter(request, response);
-            return;
         }
 
         chain.doFilter(request, response);
